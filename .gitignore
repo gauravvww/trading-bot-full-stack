@@ -1,0 +1,43 @@
+# have included both frontend and backend .gitignore in one file
+# General
+# ==================================
+# Secrets 
+.env
+
+# OS-specific
+.DS_Store
+
+
+# ==================================
+# Python / Backend
+# ==================================
+# Virtual environment
+/backend/venv/
+
+# Python cache
+__pycache__/
+/backend/__pycache__/
+
+
+# ==================================
+# Node / Frontend (from create-react-app)
+# ==================================
+# dependencies
+/frontend/dashboard/node_modules
+/frontend/dashboard/.pnp
+/frontend/dashboard/.pnp.js
+
+# testing
+/frontend/dashboard/coverage
+# production
+/frontend/dashboard/build
+
+# misc
+/frontend/dashboard/.env.local
+/frontend/dashboard/.env.development.local
+/frontend/dashboard/.env.test.local
+/frontend/dashboard/.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
