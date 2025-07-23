@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import AccountInfo from './AccountInfo';
+import Backtester from './Backtester.js'; 
 
 function App() {
   const [accountInfo, setAccountInfo] = useState(null);
@@ -23,7 +24,7 @@ function App() {
         <h1>Trading Bot Dashboard</h1>
 
         <AccountInfo accountData = {accountInfo}></AccountInfo>
-        
+        <Backtester />
         </header>
     </div>
   );
