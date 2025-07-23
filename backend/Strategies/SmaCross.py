@@ -21,7 +21,7 @@ class SmaCross(bt.Strategy):
         )
 
     def next(self):
-        if (self.position == 0) and (self.crossover > 0):
+        if (self.position.size == 0) and (self.crossover > 0):
             self.buy()
-        elif(self.position > 0) and (self.crossover < 0):
+        elif(self.position.size > 0) and (self.crossover < 0):
             self.close()
