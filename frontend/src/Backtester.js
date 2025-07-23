@@ -34,7 +34,7 @@ function Backtester() {
           type="text"
           value={symbol}
           onChange={e => setSymbol(e.target.value.toUpperCase())}
-          placeholder="Enter stock symbol (e.g., AAPL)"
+          placeholder="Enter stock symbol (e.g., AAPL, MSFT, TSLA)"
         />
         <button onClick={handleRunBacktest} disabled={loading}>
           {loading ? 'Running...' : 'Run Backtest'}

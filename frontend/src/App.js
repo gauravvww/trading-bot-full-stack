@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import AccountInfo from './AccountInfo';
-import Backtester from './Backtester.js'; 
+import Backtester from './Backtester'; 
 
 function App() {
   const [accountInfo, setAccountInfo] = useState(null);
@@ -19,14 +19,21 @@ function App() {
   }, []);
 
   return (
+    
     <div className="App">
-      <header className="App-header">
-        <h1>Trading Bot Dashboard</h1>
-
-        <AccountInfo accountData = {accountInfo}></AccountInfo>
-        <Backtester />
+        <header className="navbar">
+         <h2> AlgoBot</h2>
         </header>
-    </div>
+
+        <h1>Trading Bot Dashboard</h1>
+        <section>
+        <AccountInfo accountData = {accountInfo}></AccountInfo>
+        </section>
+        <section>
+        <Backtester />
+        </section>
+      
+       </div>
   );
 }
 export default App;

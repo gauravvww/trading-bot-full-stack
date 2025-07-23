@@ -11,8 +11,8 @@ function AccountInfo({accountData}){
     }
    
     return (
-    <div style={{ border: '1px solid grey', padding: '15px', borderRadius: '8px', marginTop: '20px' }}>
-      <h3>Account Details</h3>
+    <div className="card">
+      <h3>Account Overview</h3>
       <p><strong>Status:</strong> {accountData.status}</p>
       <p><strong>Account Number:</strong> {accountData.account_number}</p>
       <p><strong>Portfolio Value:</strong> ${parseFloat(accountData.portfolio_value).toLocaleString()}</p>
