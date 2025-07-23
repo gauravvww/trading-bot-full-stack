@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-
+import {LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts';
 function Backtester() {
   const [symbol, setSymbol] = useState('');
   const [result, setResult] = useState(null);
@@ -13,6 +13,7 @@ function Backtester() {
     fetch(`http://127.0.0.1:8000/api/backtest/${symbol}`)
       .then(response => response.json())
       .then(data => {
+        
         setResult(data);
         setLoading(false);
       })
@@ -22,6 +23,7 @@ function Backtester() {
         setLoading(false);
       });
   };
+  console.log("Current Result State:", result);
 
   return (
     <div style={{width: '300px', border: '1px solid grey', padding: '15px', borderRadius: '8px', marginTop: '20px' }}>
@@ -47,10 +49,28 @@ function Backtester() {
           ) : (
             <>
              
-              <h4>Backtest Result for: {result.symbol}</h4>
-              <p><strong>Starting Value:</strong> ${result.starting_value?.toLocaleString()}</p>
-              <p><strong>Final Value:</strong> ${result.final_value?.toLocaleString()}</p>
-              <p><strong>Profit/Loss:</strong> ${ (result.final_value - result.starting_value).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) }</p>
+                <h4>Backtest Result for: {result.symbol}</h4>
+                <p><strong>Starting Value:</strong> ${result.starting_value?.toLocaleString()}</p>
+                <p><strong>Final Value:</strong> ${result.final_value?.toLocaleString()}</p>
+                <p><strong>Profit/Loss:</strong> ${ (result.final_value - result.starting_value).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) }</p>
+                
+                
+                {result.chart_data && (
+                  <div style={{ marginTop: '20px', width: '100%', height: 400 }}>
+                    <ResponsiveContainer>
+                      <LineChart data = {result.chart_data}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey ="timestamp" />
+                        <YAxis domain = {['auto', 'auto']} />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="close" stroke="#4ac26cff" name = "Close Price" dot ={false} />
+                      </LineChart>
+                      </ResponsiveContainer>
+
+
+                  </div>
+                )}
             </>
           )}
         </div>

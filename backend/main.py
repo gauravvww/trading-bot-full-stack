@@ -1,3 +1,5 @@
+
+
 import os
 from dotenv import load_dotenv
 import alpaca_trade_api as tradeapi #tradeapi is alias
@@ -6,7 +8,12 @@ from fastapi.middleware.cors import CORSMiddleware
 import backtrader as bt
 from datetime import datetime
 from strategies.SmaCross import SmaCross
+from fastapi.staticfiles import StaticFiles
 
+
+
+
+os.environ['MPLBACKEND'] = 'Agg'
 load_dotenv()
 api = tradeapi.REST(
     os.getenv('APCA_API_KEY_ID'),
@@ -18,6 +25,7 @@ api = tradeapi.REST(
 )
 
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 origins = [
@@ -71,17 +79,27 @@ def run_backtest(symbol):
             if data_df.empty:
                 raise HTTPException(status_code=404, detail=f"No data found for symbol {symbol}")
             print(data_df.head())
+            data_df['openinterest'] = 0 # Backtrader requires this column, even if it's not used
             feed = bt.feeds.PandasData(dataname = data_df)
             cerebro.adddata(feed)
             cerebro.addstrategy(SmaCross)
             print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
             cerebro.run()
             print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
+            data_df['timestamp'] = data_df.index.strftime('%Y-%m-%d')  # Ensure index renamed as timestamp is in string format for plotting
+            chart_data_list = data_df.to_dict(orient='records')
+           
+
+                # chart_data_list = [
+                #   {'timestamp': '2025-07-20', 'open': 100, 'close': 110},
+                #   {'timestamp': '2025-07-21', 'open': 110, 'close': 108}
+                # ]
 
             return {
                 "symbol" : symbol,
                 "starting_value": 100000,
-                "final_value": round(cerebro.broker.getvalue(),2)
+                "final_value": round(cerebro.broker.getvalue(),2),
+                "chart_data": chart_data_list,
             }
         except Exception as e:
            raise HTTPException(status_code=500,detail=str(e))
