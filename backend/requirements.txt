@@ -4,3 +4,5 @@ python-dotenv
 alpaca-trade-api
 backtrader 
 matplotlib
+sqlalchemy
+psycopg2-binary
