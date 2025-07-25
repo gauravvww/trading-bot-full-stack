@@ -1,17 +1,29 @@
 
 import React, { useState } from 'react';
+import './Backtester.css';
 import {LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts';
-function Backtester() {
-  const [symbol, setSymbol] = useState('');
+function Backtester({symbol, setSymbol}) {
+  
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [liveStatus, setLiveStatus] = useState('');
 
   const handleRunBacktest = () => {
     setLoading(true);
     setResult(null);
 
-    fetch(`http://127.0.0.1:8000/api/backtest/${symbol}`)
-      .then(response => response.json())
+    fetch(`http://127.0.0.1:8000/api/backtest/${symbol}`, {method: 'POST'})
+      
+      .then(async (response) => {
+        // This block checks if the server responded with an error
+        const data = await response.json();
+
+        if (!response.ok) {
+          
+          throw new Error(data.detail || 'Failed to run backtest.');
+        }
+        return data;
+      })
       .then(data => {
         
         setResult(data);
@@ -23,60 +35,84 @@ function Backtester() {
         setLoading(false);
       });
   };
-  console.log("Current Result State:", result);
+  const handleStartLive = () => {
+    setLiveStatus(`Starting live trading for ${symbol}...`);
+    fetch(`http://127.0.0.1:8000/api/livetrade/start/${symbol}`, { method: 'POST' })
+      .then(async (response) => {
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.detail || 'Failed to start.');
+          }
+          return data;
+      })
+      
+      .then(data => setLiveStatus(data.message || data.detail))
+      .catch((error) => setLiveStatus(`Error: ${error.message}`));
+  };
+  const handleStopLive = () => {
+    setLiveStatus(`Stopping live trading for ${symbol}...`);
+    fetch(`http://127.0.0.1:8000/api/livetrade/stop/${symbol}`, { method: 'POST' })
+      .then(response => response.json())
+      .then(data => setLiveStatus(data.message || data.detail))
+      .catch(() => setLiveStatus('Failed to stop live trading.'));
+  };
+  
 
-  return (
-    <div style={{width: '300px', border: '1px solid grey', padding: '15px', borderRadius: '8px', marginTop: '20px' }}>
-      <h3>Run a Backtest</h3>
-      <div>
-        <input
-       style = {{width: '300px'}} 
-          type="text"
-          value={symbol}
-          onChange={e => setSymbol(e.target.value.toUpperCase())}
-          placeholder="Enter stock symbol (e.g., AAPL, MSFT, TSLA)"
-        />
-        <button onClick={handleRunBacktest} disabled={loading}>
-          {loading ? 'Running...' : 'Run Backtest'}
-        </button>
+return (
+    <div className="backtester-container">
+      {/* LEFT SIDE (Controls) */}
+      <div className="backtester-left">
+        <div className="backtester-section">
+          <h3>Run a Backtest</h3>
+          <button onClick={handleRunBacktest} disabled={!symbol || loading}>
+            {loading ? 'Running...' : 'Run Backtest'}
+          </button>
+        </div>
+        <div className="backtester-section">
+          <h3>Live Paper Trading</h3>
+          <button onClick={handleStartLive} disabled={!symbol}>Start Live</button>
+          <button onClick={handleStopLive} disabled={!symbol}>Stop Live</button>
+          {liveStatus && <p className="status-text">Status: {liveStatus}</p>}
+        </div>
       </div>
 
-      {result && (
-        <div style={{ marginTop: '15px' }}>
-         
-          {result.error ? (
-            <p style={{ color: 'red' }}>{result.error}</p>
-          ) : (
-            <>
-             
-                <h4>Backtest Result for: {result.symbol}</h4>
-                <p><strong>Starting Value:</strong> ${result.starting_value?.toLocaleString()}</p>
-                <p><strong>Final Value:</strong> ${result.final_value?.toLocaleString()}</p>
-                <p><strong>Profit/Loss:</strong> ${ (result.final_value - result.starting_value).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) }</p>
-                
-                
-                {result.chart_data && (
-                  <div style={{ marginTop: '20px', width: '100%', height: 400 }}>
-                    <ResponsiveContainer>
-                      <LineChart data = {result.chart_data}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey ="timestamp" />
-                        <YAxis domain = {['auto', 'auto']} />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="close" stroke="#4ac26cff" name = "Close Price" dot ={false} />
-                      </LineChart>
-                      </ResponsiveContainer>
+      
+      {(loading || result) && (
+        <div className="backtester-right">
+          {loading && <p>Running backtest...</p>}
+          
+          {result && !result.error && (
+            <div className="result-block">
+              <h4>Backtest Result for: {result.symbol}</h4>
+              <p><strong>Starting Value:</strong> ${result.starting_value?.toLocaleString()}</p>
+              <p><strong>Final Value:</strong> ${result.final_value?.toLocaleString()}</p>
+              <p><strong>Profit/Loss:</strong> ${(result.final_value - result.starting_value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              
+              {result.chart_data && (
+                <div className="backtester-chart">
+                  <ResponsiveContainer>
+                    <LineChart data={result.chart_data}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="timestamp" />
+                      <YAxis domain={['auto', 'auto']} />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="close" stroke="#4ac26c" name="Close Price" dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
+          )}
 
-
-                  </div>
-                )}
-            </>
+          {result?.error && (
+            <div className="error-text">{result.error}</div>
           )}
         </div>
       )}
     </div>
   );
+
 }
 
 export default Backtester;

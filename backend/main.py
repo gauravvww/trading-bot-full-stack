@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 import alpaca_trade_api as tradeapi #tradeapi is alias
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 import backtrader as bt
 from datetime import datetime
@@ -10,6 +10,8 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 import crud, models
 from database import SessionLocal, engine
+import asyncio
+
 
 # This line creates the "backtests" table in the PostegreSQL database I have connected/installed, if it doesn't exist
 models.Base.metadata.create_all(bind=engine)
@@ -71,7 +73,7 @@ def get_account_info():
     #if there is an error, return the error message as a string
     #str is necessary because the Exception e is an object, not a string so FastAPI will not be able to convert it to JSON
 
-@app.get("/api/backtest/{symbol}")
+@app.post("/api/backtest/{symbol}")
 def run_backtest(symbol, db: Session = Depends(get_db)):
        
         try:
@@ -116,3 +118,75 @@ def run_backtest(symbol, db: Session = Depends(get_db)):
         except Exception as e:
            raise HTTPException(status_code=500,detail=str(e))
             
+live_tasks = {}
+
+async def run_live_trade(symbol:str):
+    db = SessionLocal()
+    print(f"Satrting live trade task for {symbol} ")
+    try:
+        while symbol in live_tasks:
+            try:
+                print(f"Checking for signals for {symbol}...")
+                latest_bars = api.get_bars(symbol, '1Day', limit=50, feed='iex').df
+                if latest_bars.empty:
+                    await asyncio.sleep(60)  # Wait for 1 minute before retrying
+                    continue
+                latest_bars['openinterest'] = 0
+                data_feed = bt.feeds.PandasData(dataname=latest_bars)
+
+                cerebro = bt.Cerebro()
+                cerebro.adddata(data_feed)
+                cerebro.addstrategy(SmaCross)
+                
+                results = cerebro.run()
+                latest_signal = results[0].crossover[0]
+
+                print(f"Latest signal for {symbol}: Crossover={latest_signal}")
+
+                positions = {p.symbol: p for p in api.list_positions()}
+                # api.list_positions() → [
+                #     Position(symbol='AAPL', qty=1),
+                #      Position(symbol='TSLA', qty=1)
+                # ]
+                # positions = {
+                #     'AAPL': Position(symbol='AAPL', qty=1),
+                #     'TSLA': Position(symbol='TSLA', qty=1)
+                # }
+
+
+                if symbol not in positions and latest_signal > 0:
+                    print(f"BUY SIGNAL for {symbol}. Submitting market order.")
+                    order = api.submit_order(symbol=symbol, qty=1, side='buy', type='market', time_in_force='day')
+                    crud.create_live_trade(db=db, symbol_passed=symbol, side_passed='buy', quantity_passed=1, price_passed=float(order.filled_avg_price))
+        
+                elif symbol in positions and latest_signal < 0:
+                    print(f"SELL SIGNAL for {symbol}. Submitting market order to close position.")
+                    order = api.submit_order(symbol=symbol, qty=positions[symbol].qty, side='sell', type='market', time_in_force='day')
+                    crud.create_live_trade(db=db, symbol_passed=symbol, side_passed='sell', quantity_passed=1, price_passed=float(order.filled_avg_price))
+                else:
+                    print(f"No signal for {symbol}. Holding position.")
+
+            except Exception as e:
+                print(f"Error in live trade task for {symbol}: {e}")
+            await asyncio.sleep(60)
+    finally:
+        db.close()
+        print(f"Live trade task for {symbol} has been stopped.")            
+
+@app.post("/api/livetrade/start/{symbol}")
+def start_live_trade(symbol: str, background_tasks: BackgroundTasks):
+    if symbol in live_tasks:
+        raise HTTPException(status_code=400, detail="Live trading for this symbol is already running.")
+    
+    live_tasks[symbol] = True
+    background_tasks.add_task(run_live_trade, symbol)
+    return {"message": f"Live trading started for {symbol}."}
+
+@app.post("/api/livetrade/stop/{symbol}")
+def stop_live_trade(symbol: str):
+    if symbol not in live_tasks:
+        raise HTTPException(status_code=404, detail="Live trading for this symbol is not running.")
+    
+    
+    del live_tasks[symbol]
+    return {"message": f"Live trading stopped for {symbol}."}
