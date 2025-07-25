@@ -7,9 +7,10 @@ import Backtester from './Backtester.js';
 function App() {
   const [accountInfo, setAccountInfo] = useState(null);
   const [symbol, setSymbol] = useState(''); 
-
+  const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/api/account')
+   
+    fetch(`${API_URL}/api/account`)
       .then(response => response.json())
       .then(data => {
         setAccountInfo(data);

@@ -7,12 +7,12 @@ function Backtester({symbol, setSymbol}) {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [liveStatus, setLiveStatus] = useState('');
-
+  const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
   const handleRunBacktest = () => {
     setLoading(true);
     setResult(null);
 
-    fetch(`http://127.0.0.1:8000/api/backtest/${symbol}`, {method: 'POST'})
+    fetch(`${API_URL}/api/backtest/${symbol}`, {method: 'POST'})
       
       .then(async (response) => {
         // This block checks if the server responded with an error
@@ -37,7 +37,7 @@ function Backtester({symbol, setSymbol}) {
   };
   const handleStartLive = () => {
     setLiveStatus(`Starting live trading for ${symbol}...`);
-    fetch(`http://127.0.0.1:8000/api/livetrade/start/${symbol}`, { method: 'POST' })
+    fetch(`${API_URL}/api/livetrade/start/${symbol}`, { method: 'POST' })
       .then(async (response) => {
           const data = await response.json();
           if (!response.ok) {
@@ -51,7 +51,7 @@ function Backtester({symbol, setSymbol}) {
   };
   const handleStopLive = () => {
     setLiveStatus(`Stopping live trading for ${symbol}...`);
-    fetch(`http://127.0.0.1:8000/api/livetrade/stop/${symbol}`, { method: 'POST' })
+    fetch(`${API_URL}/livetrade/stop/${symbol}`, { method: 'POST' })
       .then(response => response.json())
       .then(data => setLiveStatus(data.message || data.detail))
       .catch(() => setLiveStatus('Failed to stop live trading.'));
