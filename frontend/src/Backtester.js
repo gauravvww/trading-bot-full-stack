@@ -31,7 +31,7 @@ function Backtester({symbol, setSymbol}) {
       })
       .catch(error => {
         console.error('Error fetching backtest data:', error);
-        setResult({ error: 'Failed to run backtest.' });
+        setResult({ error: 'Make sure the entered symbol is valid. If it is, please wait 20–30 seconds for the Render backend server to wake up (cold start).' });
         setLoading(false);
       });
   };
