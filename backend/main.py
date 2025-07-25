@@ -5,12 +5,15 @@ from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 import backtrader as bt
 from datetime import datetime
-from strategies.SmaCross import SmaCross
+
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 import crud, models
 from database import SessionLocal, engine
 import asyncio
+import sys
+sys.path.append('..')
+from strategies.SmaCross import SmaCross
 
 
 # This line creates the "backtests" table in the PostegreSQL database I have connected/installed, if it doesn't exist
