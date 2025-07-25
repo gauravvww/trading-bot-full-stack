@@ -51,7 +51,7 @@ function Backtester({symbol, setSymbol}) {
   };
   const handleStopLive = () => {
     setLiveStatus(`Stopping live trading for ${symbol}...`);
-    fetch(`${API_URL}/livetrade/stop/${symbol}`, { method: 'POST' })
+    fetch(`${API_URL}/api/livetrade/stop/${symbol}`, { method: 'POST' })
       .then(response => response.json())
       .then(data => setLiveStatus(data.message || data.detail))
       .catch(() => setLiveStatus('Failed to stop live trading.'));
