@@ -1,20 +1,20 @@
-// FILE: frontend/src/AccountInfo.js
+
 
 import React from 'react';
 import './AccountInfo.css'; 
 
 function AccountInfo({ accountData }) {
-  // Show a loading message if data hasn't arrived yet
+
   if (!accountData) {
     return <div className="account-info-container">Loading account data...</div>;
   }
   
-  // Show an error message if the fetch failed
+
   if (accountData.error) {
     return <div className="account-info-container">{accountData.error}</div>;
   }
 
-  // 2. Add the CSS classNames to the divs
+
   return (
     <div className="account-info-container">
       <h3>Account Overview</h3>

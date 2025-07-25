@@ -1,4 +1,4 @@
-// FILE: frontend/src/App.js
+
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import AccountInfo from './AccountInfo.js';
@@ -6,7 +6,7 @@ import Backtester from './Backtester.js';
 
 function App() {
   const [accountInfo, setAccountInfo] = useState(null);
-  const [symbol, setSymbol] = useState(''); // Symbol state is now here
+  const [symbol, setSymbol] = useState(''); 
 
   useEffect(() => {
     fetch('http://127.0.0.1:8000/api/account')
@@ -27,12 +27,12 @@ function App() {
       </header>
       <h1>Trading Bot Dashboard</h1>
       
-      {/* 1. Account Overview */}
+      
       <section>
         <AccountInfo accountData={accountInfo} />
       </section>
 
-      {/* 2. Shared Symbol Input */}
+      
       <div className="symbol-input-section">
         <h3>Enter Stock Symbol</h3>
         <input
@@ -43,7 +43,7 @@ function App() {
         />
       </div>
       
-      {/* 3. Backtester / Live Trading Controls */}
+     
       <section>
         <Backtester symbol={symbol} setSymbol={setSymbol} />
       </section>

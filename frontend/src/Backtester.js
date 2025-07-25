@@ -60,7 +60,7 @@ function Backtester({symbol, setSymbol}) {
 
 return (
     <div className="backtester-container">
-      {/* LEFT SIDE (Controls) */}
+      
       <div className="backtester-left">
         <div className="backtester-section">
           <h3>Run a Backtest</h3>
