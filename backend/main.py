@@ -19,6 +19,11 @@ models.Base.metadata.create_all(bind=engine)
 
 os.environ['MPLBACKEND'] = 'Agg'
 load_dotenv()
+SQLALCHEMY_DATABASE_URL = os.getenv(
+    "SQLALCHEMY_DATABASE_URL", 
+    "postgresql://tradingbotuser@localhost/tradingbotdb"
+)
+
 api = tradeapi.REST(
     os.getenv('APCA_API_KEY_ID'),
     os.getenv('APCA_API_SECRET_KEY'),
