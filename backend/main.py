@@ -6,12 +6,11 @@ import alpaca_trade_api as tradeapi #tradeapi is alias
 import backtrader as bt
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 import crud
 import models
-from database import SessionLocal, init_db
+from database import SessionLocal, get_db_session, init_db
 import asyncio
 import sys
 sys.path.append('..')
@@ -60,14 +59,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 @app.get("/status")
 def get_status():
  return {"status": "ok"} #FastAPI converts this toJSON
@@ -89,7 +80,7 @@ def get_account_info():
     #str is necessary because the Exception e is an object, not a string so FastAPI will not be able to convert it to JSON
 
 @app.post("/api/backtest/{symbol}")
-def run_backtest(symbol, db: Session = Depends(get_db)):
+def run_backtest(symbol, db: Session = Depends(get_db_session)):
        
         try:
             cerebro = bt.Cerebro()
