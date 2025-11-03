@@ -6,11 +6,12 @@ import alpaca_trade_api as tradeapi #tradeapi is alias
 import backtrader as bt
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 import crud
 import models
-from database import SessionLocal, get_db_session, init_db
+
 import asyncio
 import sys
 sys.path.append('..')
