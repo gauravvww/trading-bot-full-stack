@@ -2,7 +2,7 @@ fastapi
 uvicorn[standard]
 python-dotenv
 alpaca-trade-api
-backtrader 
+backtrader
 matplotlib
 sqlalchemy
 psycopg2-binary
