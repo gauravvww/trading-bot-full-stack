@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 
 import crud
 import models
-from database import SessionLocal, init_db
+
 import asyncio
 import sys
 sys.path.append('..')
@@ -60,14 +60,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 @app.get("/status")
 def get_status():
  return {"status": "ok"} #FastAPI converts this toJSON
@@ -89,7 +81,7 @@ def get_account_info():
     #str is necessary because the Exception e is an object, not a string so FastAPI will not be able to convert it to JSON
 
 @app.post("/api/backtest/{symbol}")
-def run_backtest(symbol, db: Session = Depends(get_db)):
+def run_backtest(symbol, db: Session = Depends(get_db_session)):
        
         try:
             cerebro = bt.Cerebro()
