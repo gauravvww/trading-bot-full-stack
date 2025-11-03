@@ -1,23 +1,38 @@
+import logging
 import os
-
-import alpaca_trade_api as tradeapi #tradeapi is alias
-from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
-import backtrader as bt
 from datetime import datetime
 
+import alpaca_trade_api as tradeapi #tradeapi is alias
+import backtrader as bt
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-import crud, models
-from database import SessionLocal, engine
+
+import crud
+import models
+from database import SessionLocal, init_db
 import asyncio
 import sys
 sys.path.append('..')
 from strategies.SmaCross import SmaCross
 
 
-# This line creates the "backtests" table in the PostegreSQL database I have connected/installed, if it doesn't exist
-models.Base.metadata.create_all(bind=engine)
+logger = logging.getLogger(__name__)
+
+app = FastAPI()
+
+
+@app.on_event("startup")
+def on_startup() -> None:
+    """Ensure database tables exist before handling requests."""
+
+    try:
+        init_db()
+        logger.info("Database tables verified or created successfully")
+    except Exception:
+        logger.exception("Database initialization failed")
+        raise
 
 
 
@@ -29,8 +44,6 @@ api = tradeapi.REST(
 
     #created an object of REST class from alpaca_trade_api as tradeapi
 )
-
-app = FastAPI()
 
 
 
