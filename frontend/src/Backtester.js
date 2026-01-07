@@ -90,14 +90,14 @@ return (
               
               {result.chart_data && (
                 <div className="backtester-chart">
-                  <ResponsiveContainer>
+                  <ResponsiveContainer> // it forces the chart to stretch to fill the parent div automatically.
                     <LineChart data={result.chart_data}>
-                      <CartesianGrid strokeDasharray="3 3" />
+                      <CartesianGrid strokeDasharray="3 3" /> // Draws the faint grid lines behind the graph.
                       <XAxis dataKey="timestamp" />
                       <YAxis domain={['auto', 'auto']} />
                       <Tooltip />
                       <Legend />
-                      <Line type="monotone" dataKey="close" stroke="#4ac26c" name="Close Price" dot={false} />
+                      <Line type="monotone" dataKey="close" stroke="#4ac26c" name="Close Price" dot={false} /> // no dots, forms a line
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
